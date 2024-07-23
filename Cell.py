@@ -2,6 +2,12 @@ from typing import List
 
 
 class Cell:
+    """
+    Represents a cell in a typical normal form game.
+    A cell contains an index for identification purposes,
+    the strategies selected to pick this cell, and
+    the payoffs for each player at this cell.
+    """
 
     def __init__(self, cell_index: int, strategies=None, payoffs=None):
         if payoffs is None:
@@ -32,51 +38,28 @@ class Cell:
 
 
 class Matrix:
+    """
+    A class to represent the matrix of a normal form game.
+    Stores all cells in a list.
+    Also contains a list of all players and a 2-d list of all strategies, where each
+    individual list is all strategies for a selected player.
+    """
 
-    def __init__(self, players: List[str], strategies: List[List[str]]):  #, payoffs: List[List[float]]):  #, indices: List[int]):
+    def __init__(self, players: List[str], strategies: List[List[str]]):
+        """
+        :param players: List of players in the normal form game
+        :param strategies: 2-d list of strategies. The index of the strategy list matches the index in the player list.
+        i.e. the list a strategies[0] corresponds to the strategies that can be selected by player[0]
+        """
         self.players = players
         self.strategies = strategies
-        # self.payoffs = payoffs
-        # self.indices = indices
         assert len(players) == len(strategies)
         self.all_cells: List[Cell] = []
-        # self.all_cells: List[Cell] = [Cell(self.indices[i]) for i in range(len(self.indices))]
-        # num_cells: int = 1
-        # for s in self.strategies:
-        #     num_cells *= len(s)
-        #
-        # for i in range(len(self.indices)):
-        #     self.all_cells.append(Cell(self.indices[i]))
-
-        # self.player_payoffs: List[List[float]] = []  # a list of length (len(self.players)) each containing a list for that corresponding player's payoffs. in same index order as self.indices
-        # for i in range(len(players)):
-        #     single_player_payoffs: List[float] = [0 for _ in range(len(indices))]
-        #     for k in range(len(payoffs)):
-        #         index: int = self.indices[k]  # index to put into single player payoffs list
-        #         single_player_payoffs[index-1] = self.payoffs[k][i]  # payoff for player i at cell k
-        #         # get the cell with the index and append the payoff
-        #         c: Cell = [cell for cell in self.all_cells if cell.index == index][0]
-        #         c.add_payoff(self.payoffs[k][i])
-        #     self.player_payoffs.append(single_player_payoffs)
-
-    # def print_str_strategies_per_player(self, player_name: str) -> str:
-    #     """
-    #
-    #     :return:
-    #     """
-    #     index: int = self.players.index(player_name)
-    #     print_strategies: List[str] = []
-    #     len_prev: int = 0
-    #     for k, s in enumerate(self.strategies):
-    #         print_strategies += [f"{{#{(i+1) + len_prev},{strat}}}" for i, strat in enumerate(s)]
-    #         len_prev += len(s)
-    #     return ",".join(print_strategies)
 
     def hml_preference_vector_from_cell(self, cell: Cell) -> str:
         """
-
-        :param cell:
-        :return:
+        :param cell: The cell to convert to a preference vector.
+        :return: The preference vector in hml style for a single cell in string format.
         """
         pv_str: str = "{"
         len_prev: int = 0
@@ -92,7 +75,7 @@ class Matrix:
     def hml_all_pref_vec(self, cells: List[Cell]) -> str:
         """
         :param cells: an already ordered list of cells sorted by player's preferences
-        :return: string representation for printing to a hml file
+        :return: string representation of all preference vectors for printing to a hml file.
         """
         all_pv_str = "     "
         for i in range(len(cells)):
@@ -100,7 +83,10 @@ class Matrix:
             all_pv_str += ",\n     " if i != len(cells) - 1 else "\n"
         return all_pv_str
 
-    def add_cell(self, cell: Cell):
+    def add_cell(self, cell: Cell) -> None:
+        """
+        Add a cell to the list of cells in the matrix.
+        :param cell: the cell to add
+        """
         if cell not in self.all_cells:
             self.all_cells.append(cell)
-

@@ -1,102 +1,24 @@
-from typing import List, Any
-import xml.etree.ElementTree as ET
-from enum import Enum
-import re
+from typing import List
 from Cell import Cell, Matrix
 import pygambit
 
 
-# Hypergame contains list of games of current level - 1
-# games at level 0 contain list of players, list of preference vectors (1 preference vector for each player)
-# preference vector contains perception, player reference?, and
-# player has list of strategies, list of mutually exclusive options
-
 class GameFormatException(Exception):
+    """
+    Raise this exception if the game file is not formatted properly.
+    """
     pass
-
-
-class StringLiterals(Enum):
-
-    STRATEGIES = "strategies"
-    PAYOFFS = "payoffs"
-    PLAYERS = "players"
-    INDICES = "indices"
-
-
-def re_search(line: str):
-    """
-    This function works now
-    :param line:
-    :return:
-    """
-    first_line_match = re.search(r'^NFG 1 R "[\w\s]*" { ("[\w\s]*" )+}$', line)
-    strategy_match = re.search(r'\{ (\"[\w\s]*\" )+\}$', line)  # match strategies
-    payoff_match = re.search(r'^\{ "[\w\s]*" [-?\d+(\.\d+)?, ]+ }$', line)
-    last_line_match = re.search(r'^(\d+\s)+$', line)
-    quote_match = re.findall(r'"[\w\s]*"', line)
-
-    if first_line_match:
-        player_names: List[str] = [s.strip('"') for s in quote_match[1::]]
-        return StringLiterals.PLAYERS, player_names
-    elif strategy_match:
-        player_strategies: List[str] = [s.strip('"') for s in quote_match]
-        return StringLiterals.STRATEGIES, player_strategies
-    elif payoff_match:
-        decimals = re.findall(r'-?\d+\.?[\d+]?', line)
-        return StringLiterals.PAYOFFS, [float(d) for d in decimals]
-    elif last_line_match:
-        return StringLiterals.INDICES, re.findall('\d+', line)
-    else:
-        return None
-
-
-def import_game(game_file: str) -> dict:
-    """
-    Takes information from a .nfg or .gbt strategic game file produced by Gambit
-    :param game_file: string containing name of the game file (probably local directory)
-    :return:
-    """
-    assert game_file.endswith(".nfg") or game_file.endswith(".gbt")
-
-    tree = ET.parse(game_file)
-    root = tree.getroot()
-    nfgfile_tag = [d for d in root.iter() if d.tag == "nfgfile"][0]
-    # confirm player names and strategy profiles?
-    all_strats = []
-    payoffs = []
-    players = None
-    indices = None
-
-    for line in nfgfile_tag.text.splitlines():
-        value = re_search(line)
-        if value:
-            match value[0]:
-                case StringLiterals.PLAYERS:
-                    players: List[str] = value[1]
-                case StringLiterals.STRATEGIES:
-                    all_strats.append(value[1])
-                case StringLiterals.PAYOFFS:
-                    payoffs.append(value[1])
-                case StringLiterals.INDICES:
-                    indices = [int(v) for v in value[1]]
-
-    return {StringLiterals.PLAYERS: players, StringLiterals.STRATEGIES: all_strats, StringLiterals.PAYOFFS: payoffs,
-            StringLiterals.INDICES: indices}
-
-
-# def chunks(lst: List[Any], n: int):
-#     """Yield successive n-sized chunks from lst."""
-#     for i in range(0, len(lst), n):
-#         yield lst[i:i + n]
 
 
 def make_pref_vecs(game: pygambit.Game, matrix: Matrix, by_max_val: bool = True) -> List[List[Cell]]:
     """
-
-    :param game:
-    :param matrix:
-    :param by_max_val:
-    :return:
+    Takes the game object, and orders all cells in the matrix by the preferences of each player.
+    :param game: the pygambit game object
+    :param matrix: the matrix object
+    :param by_max_val: a boolean that if true says the game is ordered by maximum preference vectors, where the max
+    value is the most preferred preference vector. If false, then the minimum value is the most preferred vector
+    :return: a 2-d list of Cells where each list corresponds to each player, i.e. list[0] corresponds to the first
+    player's preference vectors, list[1] to the second player's, and so forth.
     """
 
     all_payoff_vals: List[List[float]] = [[0 for _ in range(len(game.players))] for _ in range(len(game.contingencies))]
@@ -118,6 +40,11 @@ def make_pref_vecs(game: pygambit.Game, matrix: Matrix, by_max_val: bool = True)
 
 
 def str_hml_strategies(strats: List[str], printed_so_far: int = 0) -> str:
+    """
+    :param strats: The list of strategies to print to hml format.
+    :param printed_so_far: The number of strategies printed so far.
+    :return: A string representation of a player's strategies in hml format.
+    """
     print_strategies: List[str] = []
     for k, s in enumerate(strats):
         print_strategies.append(f"{{#{(k+1+printed_so_far)},{s}}}")
@@ -126,11 +53,12 @@ def str_hml_strategies(strats: List[str], printed_so_far: int = 0) -> str:
 
 def main():
     print("Welcome to the Hypergame Markup Language (HML) scripter. This script takes provided information and creates"
-          " an HML file to be read into the Hypergame Analysis Tool (HYPANT) found at "
-          "https://users.monash.edu/~lbrumley/hyper.html.")
+          " an HML file to be read into the \nHypergame Analysis Tool (HYPANT) found at "
+          "https://users.monash.edu/~lbrumley/hyper.html.\n")
 
     output_file_name: str = input("Please input the output hml file name to include the .hml extension: ").strip()
     assert output_file_name.endswith(".hml")
+    print('\n')
 
     level: str = ""
     while not level.isdigit():
@@ -138,11 +66,14 @@ def main():
                       "etc.: ").strip()
         # does not check for negative numbers
     hypergame_level: int = int(level)
+    print('\n')
 
     num_players: str = ""
     while not num_players.isdigit():
         num_players = input("Please input the number of players in this hypergame: ").strip()
         # does not check for negative numbers
+
+    print('\n')
 
     with open(output_file_name, "w") as output_file_stream:
         output_file_stream.write("{\n")
@@ -154,7 +85,7 @@ def main():
             print("\n-------------------------------------------\n")
             perception: str = ","
             while len(
-                    perception.split(',')) != hypergame_level:  # TODO: this doesn't work with level 1 hypergame yet...
+                    perception.split(',')) != hypergame_level:
                 perception = input("Input the perception of this game, with each perception separated by a comma. The "
                                    "number of perceptions should equal the hypergame level. (i.e, Player 1's perception"
                                    "\nof player 2's perception of player 2's game for a 3rd level hypergame would be "
@@ -184,6 +115,9 @@ def main():
             # make matrix
             matrix = Matrix(players, all_strategies)
             game_pref_vecs: List[List[Cell]] = make_pref_vecs(game, matrix, by_max_bool)
+
+            comment: str = input("Please add a comment or description for this game: ").strip().replace('\n', ' ')
+            output_file_stream.write(f"   %%{comment}\n")  # 3 spaces then comment
 
             num_strategies_printed: int = 0
             for i, player in enumerate(players):  # for each player in the game
