@@ -28,7 +28,8 @@ player 2's values are in <span style="color:blue">blue</span>. There are a total
 12 different outcomes. Player 1 has four strategies and player 2 has three strategies,
 thus 3 * 4 = 12 total outcomes. In each game, each player has a preference vector where
 there most preferred outcome is the highest number (or lowest number, the script will
-ask you which one). In this example, 12 is the most preferred outcome and 1 is the least
+ask you which one). Each number from one to the maximum will appear in the matrix once for each player.
+In this example, 12 is the most preferred outcome and 1 is the least
 preferred outcome. So for player 2, designated at the "attacker", 
 the most preferred outcome is where player 1 does not defend
 and player 2 attacks, so that cell value is filled with a value of 12. (the values in
@@ -38,7 +39,7 @@ vectors in this example).
 Gambit generally uses utility values instead of preference vectors. Converting 
 utility values to preference vectors is done by ordering each payoff based
 on the utility value payoff and assigning the highest payoff to be the highest preference
-vector. Analysis of hypergame with preference vectors does not care about absolute
+vector value. Analysis of hypergames with preference vectors does not care about absolute
 numbers of payoff values, but only relative ordering of preferences, which is why
 this method works. 
 
