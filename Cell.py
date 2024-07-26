@@ -56,6 +56,9 @@ class Matrix:
         assert len(players) == len(strategies)
         self.all_cells: List[Cell] = []
 
+    def __str__(self):
+        return f"Matrix with {len(self.players)} players and {sum([len(s) for s in self.strategies])} total strategies."
+
     def hml_preference_vector_from_cell(self, cell: Cell) -> str:
         """
         :param cell: The cell to convert to a preference vector.
