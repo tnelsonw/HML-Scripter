@@ -75,6 +75,21 @@ def main():
 
     print('\n')
 
+    ###
+    # all_games: str = ""
+    # while len(all_games.split(',')) < 1:
+    #     all_games = input("Please input all .nfg or .gbt games that will be used as part of this hypergame.\n"
+    #                       "Comma separate them (e.g. game.gbt,game2.gbt,game3.gbt): ").strip()
+    # 
+    # games_dict: dict[str: pygambit.Game] = {}
+    # for game_str in all_games.split(','):
+    #     try:
+    #         games_dict[game_str] = pygambit.Game.read_game(game_str)
+    #     except (ValueError, IOError):
+    #         raise GameFormatException(f"Game {game_str} is not properly formatted for pygambit to read.")
+
+    ###
+
     with open(output_file_name, "w") as output_file_stream:
         output_file_stream.write("{\n")
         num_games_required: int = int(num_players) ** hypergame_level
@@ -83,9 +98,8 @@ def main():
             output_file_stream.write(" {\n")
 
             print("\n-------------------------------------------\n")
-            perception: str = ","
-            while len(
-                    perception.split(',')) != hypergame_level:
+            perception: str = "," if hypergame_level == 1 else ""
+            while len(perception.split(',')) != hypergame_level:
                 perception = input("Input the perception of this game, with each perception separated by a comma. The "
                                    "number of perceptions should equal the hypergame level. (i.e, Player 1's perception"
                                    "\nof player 2's perception of player 2's game for a 3rd level hypergame would be "
@@ -107,7 +121,7 @@ def main():
 
             try:
                 game: pygambit.Game = pygambit.Game.read_game(game_file)
-            except ValueError:
+            except (ValueError, IOError):
                 raise GameFormatException("The game is not properly formatted for pygambit to read.")
             players: List[str] = [p.label for p in game.players]
             all_strategies: List[List[str]] = [[s.label for s in p.strategies] for p in game.players]
