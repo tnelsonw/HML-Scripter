@@ -75,26 +75,11 @@ def main():
 
     print('\n')
 
-    ###
-    # all_games: str = ""
-    # while len(all_games.split(',')) < 1:
-    #     all_games = input("Please input all .nfg or .gbt games that will be used as part of this hypergame.\n"
-    #                       "Comma separate them (e.g. game.gbt,game2.gbt,game3.gbt): ").strip()
-    # 
-    # games_dict: dict[str: pygambit.Game] = {}
-    # for game_str in all_games.split(','):
-    #     try:
-    #         games_dict[game_str] = pygambit.Game.read_game(game_str)
-    #     except (ValueError, IOError):
-    #         raise GameFormatException(f"Game {game_str} is not properly formatted for pygambit to read.")
-
-    ###
-
     with open(output_file_name, "w") as output_file_stream:
         output_file_stream.write("{\n")
         num_games_required: int = int(num_players) ** hypergame_level
         # input each game
-        for game_num in range(num_games_required):  # number of individual games is 2^level
+        for game_num in range(num_games_required):  # number of individual games is num_players^level (assuming full hypergame structure)
             output_file_stream.write(" {\n")
 
             print("\n-------------------------------------------\n")
@@ -103,7 +88,7 @@ def main():
                 perception = input("Input the perception of this game, with each perception separated by a comma. The "
                                    "number of perceptions should equal the hypergame level. (i.e, Player 1's perception"
                                    "\nof player 2's perception of player 2's game for a 3rd level hypergame would be "
-                                   "'Player 2,Player 2,Player 1'): ").strip()
+                                   "'Player 2,Player 2,Player 1'): ").strip()  # no real input validation here
             print('\n')
             output_file_stream.write("  {" + perception + "},\n")
             output_file_stream.write("  {\n")  # two spaces then curly bracket
@@ -139,12 +124,15 @@ def main():
 
                 current_player_strategies: List[str] = [s.label for s in list(list(game.players)[i].strategies)]
 
-                output_file_stream.write(f"    {player},")
+                output_file_stream.write(f"    {player},")  # 4 spaces
                 output_file_stream.write("{")  # curly bracket that wraps all strategies
 
-                print(f"These are player {player}'s strategies:")
+                strategies_output: str = str_hml_strategies(current_player_strategies, num_strategies_printed)
+                print("---------------------------------------")
+                print(f"Player {player}'s strategies: {strategies_output}.")
+                print("---------------------------------------")
 
-                output_file_stream.write(str_hml_strategies(current_player_strategies, num_strategies_printed))
+                output_file_stream.write(strategies_output)
                 num_strategies_printed += len(current_player_strategies)
 
                 output_file_stream.write("},")  # curly bracket that wraps all strategies
@@ -185,7 +173,7 @@ def main():
                 else:
                     output_file_stream.write("\n")
 
-            output_file_stream.write("  }\n")
+            output_file_stream.write("  }\n")  # two spaces then curly bracket
 
             # end this game output
             if game_num == num_games_required - 1:
