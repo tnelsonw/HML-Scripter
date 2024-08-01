@@ -1,6 +1,6 @@
 from typing import List
 from Cell import Cell, Matrix
-import pygambit
+from pygambit import Game
 
 
 class GameFormatException(Exception):
@@ -10,7 +10,7 @@ class GameFormatException(Exception):
     pass
 
 
-def make_pref_vecs(game: pygambit.Game, matrix: Matrix, by_max_val: bool = True) -> List[List[Cell]]:
+def make_pref_vecs(game: Game, matrix: Matrix, by_max_val: bool = True) -> List[List[Cell]]:
     """
     Takes the game object, and orders all cells in the matrix by the preferences of each player.
     :param game: the pygambit game object
@@ -105,7 +105,7 @@ def main():
                 by_max_bool = False
 
             try:
-                game: pygambit.Game = pygambit.Game.read_game(game_file)
+                game: Game = Game.read_game(game_file)
             except (ValueError, IOError):
                 raise GameFormatException("The game is not properly formatted for pygambit to read.")
             players: List[str] = [p.label for p in game.players]
